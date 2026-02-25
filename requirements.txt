@@ -1,4 +1,39 @@
-fastapi >=0.60.0, <0.85.0
-uvicorn >=0.15.0, <0.22.0
-pytest >=7.4.0, <8.0.0
-requests >=2.30.0, <2.31.0
+import os
+import logging
+from yaml import safe_load
+
+class YAMLParser:
+    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+
+    def __init__(self, file_path):
+        self.file_path = file_path
+
+    def is_valid_file(self):
+        # Check if the file exists
+        if not os.path.isfile(self.file_path):
+            logging.error(f"File does not exist: {self.file_path}")
+            raise ValueError("File does not exist.")
+        
+        # Check file extension
+        if not self.file_path.lower().endswith(('.yaml', '.yml')):
+            logging.error(f"Invalid file type: {self.file_path}")
+            raise ValueError("Invalid file type. Only YAML files are allowed.")
+        
+        # Check file size
+        file_size = os.path.getsize(self.file_path)
+        if file_size > self.MAX_FILE_SIZE:
+            logging.error(f"File size exceeds maximum limit: {file_size} bytes")
+            raise ValueError("File size exceeds the maximum allowed limit of 5 MB.")
+        
+        return True
+
+    def parse_yaml(self):
+        try:
+            # Validate the file before parsing
+            if self.is_valid_file():
+                with open(self.file_path, 'r') as yaml_file:
+                    data = safe_load(yaml_file)
+                return data
+        except Exception as e:
+            logging.error(f"An error occurred while parsing the YAML file: {e}")
+            raise ValueError(f"An error occurred while parsing the YAML file: {e}")
