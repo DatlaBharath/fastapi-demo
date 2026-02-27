@@ -6,8 +6,14 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 # Set working directory inside the container
 WORKDIR /app
 
+# Download checksum file for app.py
+ADD https://example.com/app.py.sha256 /app/app.py.sha256
+
 # Copy application code
 COPY app.py .
+
+# Validate checksum of app.py
+RUN sha256sum -c app.py.sha256 || exit 1
 
 # Change ownership of application files to the non-root user
 RUN chown -R appuser:appuser /app
