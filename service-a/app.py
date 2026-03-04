@@ -3,11 +3,14 @@ from pydantic import BaseModel, constr
 import requests
 import redis
 import re
+import ssl
 
 app = FastAPI()
 
-# Connect to Redis service in Minikube
-r = redis.Redis(host="redis-service", port=6379, decode_responses=True)
+# Configure Redis connection with TLS
+ssl_context = ssl.create_default_context(cafile="/path/to/ca-cert.pem")
+ssl_context.load_cert_chain(certfile="/path/to/client-cert.pem", keyfile="/path/to/client-key.pem")
+r = redis.Redis(host="redis-service", port=6379, ssl=True, ssl_context=ssl_context, decode_responses=True)
 
 @app.get("/")
 def hello():
